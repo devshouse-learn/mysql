@@ -11,6 +11,10 @@ class ProductModel {
    * @param {string} search - Búsqueda en nombre, SKU o descripción
    * @param {number} categoryId - Filtrar por categoría
    * @param {string} status - Filtrar por estado (active, inactive)
+   * @param {number} minPrice - Precio mínimo
+   * @param {number} maxPrice - Precio máximo
+   * @param {number} minStock - Stock mínimo
+   * @param {string} supplier - Filtrar por proveedor
    * @param {string} sortBy - Campo para ordenar (name, price, quantity_in_stock)
    * @param {string} sortOrder - Orden (asc, desc)
    */
@@ -21,6 +25,10 @@ class ProductModel {
       search = '',
       categoryId,
       status = 'active',
+      minPrice,
+      maxPrice,
+      minStock,
+      supplier,
       sortBy = 'name',
       sortOrder = 'asc'
     } = options;
@@ -47,6 +55,32 @@ class ProductModel {
 
     if (categoryId) {
       where.categoryId = parseInt(categoryId);
+    }
+
+    // Filtros de precio
+    if (minPrice !== undefined || maxPrice !== undefined) {
+      where.price = {};
+      if (minPrice !== undefined) {
+        where.price.gte = parseFloat(minPrice);
+      }
+      if (maxPrice !== undefined) {
+        where.price.lte = parseFloat(maxPrice);
+      }
+    }
+
+    // Filtro de stock mínimo
+    if (minStock !== undefined) {
+      where.quantityInStock = {
+        gte: parseInt(minStock)
+      };
+    }
+
+    // Filtro de proveedor
+    if (supplier) {
+      where.supplier = {
+        contains: supplier,
+        mode: 'insensitive'
+      };
     }
 
     // Mapa de campos para ordenamiento

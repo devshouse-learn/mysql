@@ -2,7 +2,8 @@ const prisma = require('../config/prisma');
 
 class InventoryMovementModel {
   /**
-   * Obtener todos los movimientos con paginación
+   * Obtener todos los movimientos con paginación y filtros
+   * @param {object} filters - Filtros (product_id, movement_type, startDate, endDate, minQuantity, maxQuantity)
    */
   static async getAll(filters = {}) {
     try {
@@ -18,6 +19,32 @@ class InventoryMovementModel {
 
       if (filters.movement_type) {
         where.movementType = filters.movement_type;
+      }
+
+      // Filtros de fecha
+      if (filters.startDate || filters.endDate) {
+        where.createdAt = {};
+        if (filters.startDate) {
+          where.createdAt.gte = new Date(filters.startDate);
+        }
+        if (filters.endDate) {
+          const end = new Date(filters.endDate);
+          if (filters.endDate.length === 10) {
+            end.setHours(23, 59, 59, 999);
+          }
+          where.createdAt.lte = end;
+        }
+      }
+
+      // Filtros de cantidad
+      if (filters.minQuantity || filters.maxQuantity) {
+        where.quantity = {};
+        if (filters.minQuantity) {
+          where.quantity.gte = parseInt(filters.minQuantity);
+        }
+        if (filters.maxQuantity) {
+          where.quantity.lte = parseInt(filters.maxQuantity);
+        }
       }
 
       const [movements, total] = await Promise.all([
@@ -155,41 +182,34 @@ class InventoryMovementModel {
           throw new Error('Movimiento no encontrado');
         }
 
-        // Calcular cambio en cantidad
-        const oldQuantityChange = currentMovement.movementType === 'entrada' 
-          ? currentMovement.quantity
-          : -currentMovement.quantity;
+        // Construir objeto de actualización solo con campos proporcionados
+        const updateData = {};
 
-        const newQuantityChange = data.movement_type === 'entrada' 
-          ? parseInt(data.quantity)
-          : -parseInt(data.quantity);
+        if (data.movement_type) {
+          updateData.movementType = data.movement_type;
+        }
 
-        const netQuantityChange = newQuantityChange - oldQuantityChange;
+        if (data.quantity !== undefined) {
+          updateData.quantity = parseInt(data.quantity);
+        }
 
-        const parsedProductId = parseInt(data.product_id);
+        if (data.notes !== undefined) {
+          updateData.notes = data.notes || null;
+        }
+
+        if (data.reference_type !== undefined) {
+          updateData.referenceType = data.reference_type || null;
+        }
+
+        if (data.reference_id !== undefined) {
+          updateData.referenceId = data.reference_id || null;
+        }
 
         // Actualizar el movimiento
         const updatedMovement = await tx.inventoryMovement.update({
           where: { id: parsedId },
-          data: {
-            productId: parsedProductId,
-            movementType: data.movement_type,
-            quantity: parseInt(data.quantity),
-            referenceType: data.reference_type || null,
-            referenceId: data.reference_id || null,
-            notes: data.notes || null
-          },
+          data: updateData,
           include: { product: true }
-        });
-
-        // Actualizar cantidad de producto
-        await tx.product.update({
-          where: { id: parsedProductId },
-          data: {
-            quantityInStock: {
-              increment: netQuantityChange
-            }
-          }
         });
 
         return updatedMovement;

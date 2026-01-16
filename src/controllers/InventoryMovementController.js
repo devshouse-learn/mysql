@@ -7,8 +7,10 @@ const movementSchema = Joi.object({
   product_id: Joi.number().integer().required(),
   movement_type: Joi.string().valid('entrada', 'salida').required(),
   quantity: Joi.number().integer().positive().required(),
-  reason: Joi.string().max(255),
-  reference: Joi.string().max(100)
+  notes: Joi.string().max(500).allow('').optional(),
+  reference_type: Joi.string().max(100).allow('').optional(),
+  reference_id: Joi.string().max(100).allow('').optional(),
+  created_by: Joi.number().integer().optional()
 });
 
 // Esquema de validación para PUT (campos opcionales)
@@ -16,8 +18,9 @@ const updateMovementSchema = Joi.object({
   product_id: Joi.number().integer(),
   movement_type: Joi.string().valid('entrada', 'salida'),
   quantity: Joi.number().integer().positive(),
-  reason: Joi.string().max(255),
-  reference: Joi.string().max(100)
+  notes: Joi.string().max(500).allow('').optional(),
+  reference_type: Joi.string().max(100).allow('').optional(),
+  reference_id: Joi.string().max(100).allow('').optional()
 });
 
 class InventoryMovementController {
@@ -28,15 +31,20 @@ class InventoryMovementController {
   static async getAll(req, res) {
     try {
       const filters = {
-        product_id: req.query.product_id ? parseInt(req.query.product_id) : null,
-        movement_type: req.query.movement_type || null
+        product_id: req.query.product_id,
+        movement_type: req.query.movement_type,
+        startDate: req.query.startDate,
+        endDate: req.query.endDate,
+        minQuantity: req.query.minQuantity,
+        maxQuantity: req.query.maxQuantity,
+        page: req.query.page,
+        limit: req.query.limit
       };
 
-      const movements = await InventoryMovementModel.getAll(filters);
+      const result = await InventoryMovementModel.getAll(filters);
       res.json({
         success: true,
-        data: movements,
-        total: movements.length
+        ...result
       });
     } catch (error) {
       res.status(500).json({
@@ -101,10 +109,10 @@ class InventoryMovementController {
       }
 
       // Validar que la salida no exceda el stock
-      if (value.movement_type === 'salida' && value.quantity > product.quantity) {
+      if (value.movement_type === 'salida' && value.quantity > product.quantityInStock) {
         return res.status(400).json({
           success: false,
-          error: `Stock insuficiente. Disponible: ${product.quantity}`
+          error: `Stock insuficiente. Disponible: ${product.quantityInStock}`
         });
       }
 
@@ -130,8 +138,7 @@ class InventoryMovementController {
     try {
       const { id } = req.params;
 
-      const movement = await InventoryMovementModel.getById ? 
-        await InventoryMovementModel.getById(id) : null;
+      const movement = await InventoryMovementModel.getByIdDirect(id);
 
       if (!movement) {
         return res.status(404).json({

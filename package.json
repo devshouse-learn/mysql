@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "jest --detectOpenHandles"
+    "test": "jest --detectOpenHandles",
+    "prisma:generate": "npx prisma generate",
+    "prisma:migrate": "npx prisma migrate deploy",
+    "prisma:studio": "npx prisma studio",
+    "prisma:seed": "npx prisma db seed"
   },
   "prisma": {
     "seed": "node prisma/seed.js"
@@ -17,7 +21,8 @@
     "rest",
     "nodejs",
     "express",
-    "mysql"
+    "postgresql",
+    "prisma"
   ],
   "author": "Developer",
   "license": "MIT",

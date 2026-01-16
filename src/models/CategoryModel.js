@@ -3,14 +3,55 @@ const prisma = require('../config/prisma');
 class CategoryModel {
   /**
    * Obtener todas las categorías
+   * @param {string} search - Búsqueda por nombre
+   * @param {boolean} isActive - Filtrar por estado (activo/inactivo)
+   * @param {number} page - Página (default: 1)
+   * @param {number} limit - Límite por página (default: 10)
    */
-  static async getAll() {
+  static async getAll(options = {}) {
     try {
-      const categories = await prisma.category.findMany({
-        where: { deletedAt: null },
-        orderBy: { name: 'asc' }
-      });
-      return categories;
+      const {
+        search = '',
+        isActive,
+        page = 1,
+        limit = 10
+      } = options;
+
+      const skip = (page - 1) * limit;
+
+      // Construir filtros
+      const where = { deletedAt: null };
+
+      if (search) {
+        where.name = {
+          contains: search,
+          mode: 'insensitive'
+        };
+      }
+
+      if (isActive !== undefined) {
+        where.isActive = isActive === 'true' || isActive === true;
+      }
+
+      const [categories, total] = await Promise.all([
+        prisma.category.findMany({
+          where,
+          orderBy: { name: 'asc' },
+          skip,
+          take: limit
+        }),
+        prisma.category.count({ where })
+      ]);
+
+      return {
+        data: categories,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit)
+        }
+      };
     } catch (error) {
       throw new Error(`Error fetching categories: ${error.message}`);
     }

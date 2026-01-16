@@ -30,17 +30,24 @@ class ProductController {
    */
   static async getAll(req, res) {
     try {
-      const filters = {
-        category_id: req.query.category_id ? parseInt(req.query.category_id) : null,
-        status: req.query.status || null,
-        search: req.query.search || null
+      const options = {
+        page: req.query.page ? parseInt(req.query.page) : 1,
+        limit: req.query.limit ? parseInt(req.query.limit) : 10,
+        search: req.query.search,
+        categoryId: req.query.categoryId ? parseInt(req.query.categoryId) : undefined,
+        status: req.query.status,
+        minPrice: req.query.minPrice ? parseFloat(req.query.minPrice) : undefined,
+        maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
+        minStock: req.query.minStock ? parseInt(req.query.minStock) : undefined,
+        supplier: req.query.supplier,
+        sortBy: req.query.sortBy,
+        sortOrder: req.query.sortOrder
       };
 
-      const products = await ProductModel.getAll(filters);
+      const result = await ProductModel.getAll(options);
       res.json({
         success: true,
-        data: products,
-        total: products.length
+        ...result
       });
     } catch (error) {
       res.status(500).json({

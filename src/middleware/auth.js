@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 // Modo de desarrollo: sin autenticación requerida
-const DEV_MODE = process.env.NODE_ENV !== 'production';
+const DEV_MODE = false; // Deshabilitado para usar tokens reales
 
 const authenticateToken = (req, res, next) => {
   // En desarrollo, permitir acceso sin token

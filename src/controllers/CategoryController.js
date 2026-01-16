@@ -14,11 +14,16 @@ class CategoryController {
    */
   static async getAll(req, res) {
     try {
-      const categories = await CategoryModel.getAll();
+      const options = {
+        search: req.query.search,
+        isActive: req.query.isActive,
+        page: req.query.page ? parseInt(req.query.page) : 1,
+        limit: req.query.limit ? parseInt(req.query.limit) : 10
+      };
+      const result = await CategoryModel.getAll(options);
       res.json({
         success: true,
-        data: categories,
-        total: categories.length
+        ...result
       });
     } catch (error) {
       res.status(500).json({
