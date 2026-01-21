@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test API</title>
+</head>
+<body>
+    <h1>Prueba de Conexión API</h1>
+    <div id="results"></div>
+
+    <script>
+        const resultsDiv = document.getElementById('results');
+        
+        async function testAPI() {
+            try {
+                // Test 1: Categorías sin auth
+                resultsDiv.innerHTML += '<h2>Test 1: GET /api/categories (sin auth)</h2>';
+                const catResponse = await fetch('http://localhost:3000/api/categories');
+                const catData = await catResponse.json();
+                resultsDiv.innerHTML += `<p>✅ Status: ${catResponse.status}</p>`;
+                resultsDiv.innerHTML += `<p>Categorías encontradas: ${catData.data?.length || 0}</p>`;
+                resultsDiv.innerHTML += `<pre>${JSON.stringify(catData.data?.slice(0, 3), null, 2)}</pre>`;
+
+                // Test 2: Login
+                resultsDiv.innerHTML += '<h2>Test 2: POST /api/auth/login</h2>';
+                const loginResponse = await fetch('http://localhost:3000/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'admin', password: 'admin123' })
+                });
+                const loginData = await loginResponse.json();
+                resultsDiv.innerHTML += `<p>✅ Status: ${loginResponse.status}</p>`;
+                resultsDiv.innerHTML += `<p>Token recibido: ${loginData.token ? 'SÍ' : 'NO'}</p>`;
+
+                // Test 3: Productos con proxy de Vite
+                resultsDiv.innerHTML += '<h2>Test 3: GET /api/products (con proxy Vite)</h2>';
+                const prodResponse = await fetch('/api/products');
+                const prodData = await prodResponse.json();
+                resultsDiv.innerHTML += `<p>✅ Status: ${prodResponse.status}</p>`;
+                resultsDiv.innerHTML += `<p>Productos encontrados: ${prodData.data?.length || 0}</p>`;
+                resultsDiv.innerHTML += `<pre>${JSON.stringify(prodData.data?.slice(0, 3), null, 2)}</pre>`;
+
+            } catch (error) {
+                resultsDiv.innerHTML += `<p style="color: red;">❌ Error: ${error.message}</p>`;
+                console.error(error);
+            }
+        }
+
+        testAPI();
+    </script>
+</body>
+</html>

@@ -264,40 +264,6 @@ router.post('/change-password', authenticateToken, UserController.changePassword
 
 /**
  * @swagger
- * /api/auth/refresh-token:
- *   post:
- *     summary: Renovar token JWT
- *     description: Genera un nuevo token JWT para el usuario autenticado, extendiendo la sesión
- *     tags: [Autenticación]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Token renovado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: Token renovado exitosamente
- *                 token:
- *                   type: string
- *                   example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
- *                   description: Nuevo token JWT
- *                 user:
- *                   $ref: '#/components/schemas/User'
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- */
-router.post('/refresh-token', authenticateToken, UserController.refreshToken);
-
-/**
- * @swagger
  * /api/auth/logout:
  *   post:
  *     summary: Cerrar sesión

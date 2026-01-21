@@ -5,6 +5,7 @@ const Joi = require('joi');
 // Esquema de validación para POST
 const movementSchema = Joi.object({
   product_id: Joi.number().integer().required(),
+  warehouse_id: Joi.number().integer().optional(),
   movement_type: Joi.string().valid('entrada', 'salida').required(),
   quantity: Joi.number().integer().positive().required(),
   notes: Joi.string().max(500).allow('').optional(),
@@ -16,6 +17,7 @@ const movementSchema = Joi.object({
 // Esquema de validación para PUT (campos opcionales)
 const updateMovementSchema = Joi.object({
   product_id: Joi.number().integer(),
+  warehouse_id: Joi.number().integer(),
   movement_type: Joi.string().valid('entrada', 'salida'),
   quantity: Joi.number().integer().positive(),
   notes: Joi.string().max(500).allow('').optional(),

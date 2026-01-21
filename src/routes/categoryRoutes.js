@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const CategoryController = require('../controllers/CategoryController');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -78,7 +79,7 @@ const CategoryController = require('../controllers/CategoryController');
  *         $ref: '#/components/responses/ValidationError'
  */
 router.get('/', CategoryController.getAll);
-router.post('/', CategoryController.create);
+router.post('/', authenticateToken, CategoryController.create);
 
 /**
  * @swagger
@@ -174,22 +175,16 @@ router.post('/', CategoryController.create);
  *         example: 1
  *     responses:
  *       200:
- *         description: Categoría actualizada
- *   delete:
- *     summary: Eliminar categoría (soft delete)
- *     tags: [Categorías]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Categoría eliminada
+ *         description: Categoría eliminada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       404:
+ *         $ref: '#/components/responses/NotFoundError'
  */
 router.get('/:id', CategoryController.getById);
-router.put('/:id', CategoryController.update);
-router.delete('/:id', CategoryController.delete);
+router.put('/:id', authenticateToken, CategoryController.update);
+router.delete('/:id', authenticateToken, CategoryController.delete);
 
 module.exports = router;

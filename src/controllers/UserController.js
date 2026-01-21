@@ -10,8 +10,11 @@ const registerSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-  username: Joi.string().required(),
+  email: Joi.string().optional(),
+  username: Joi.string().optional(),
   password: Joi.string().required()
+}).or('email', 'username').messages({
+  'object.missing': 'Debes proporcionar email o username'
 });
 
 const updateProfileSchema = Joi.object({
@@ -59,8 +62,9 @@ class UserController {
         return res.status(400).json({ error: error.details[0].message });
       }
       
-      const result = await UserModel.login(value.username, value.password);
-      logger.info(`Login exitoso: ${value.username}`);
+      const loginField = value.email || value.username;
+      const result = await UserModel.login(loginField, value.password);
+      logger.info(`Login exitoso: ${loginField}`);
       
       res.status(200).json({
         message: 'Login exitoso',
@@ -142,22 +146,6 @@ class UserController {
     }
   }
 
-  static async refreshToken(req, res) {
-    try {
-      const result = await UserModel.refreshToken(req.user.id);
-      logger.info(`Token renovado para usuario ID: ${req.user.id}`);
-      
-      res.status(200).json({
-        success: true,
-        message: 'Token renovado exitosamente',
-        ...result
-      });
-    } catch (error) {
-      logger.error(`Error al renovar token: ${error.message}`);
-      res.status(500).json({ error: error.message });
-    }
-  }
-
   static async logout(req, res) {
     try {
       // En una implementación real con Redis o base de datos,
@@ -174,3 +162,5 @@ class UserController {
     }
   }
 }
+
+module.exports = UserController;

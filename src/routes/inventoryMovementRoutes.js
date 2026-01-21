@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const InventoryMovementController = require('../controllers/InventoryMovementController');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -153,7 +154,7 @@ const InventoryMovementController = require('../controllers/InventoryMovementCon
  *         description: Producto no encontrado
  */
 router.get('/', InventoryMovementController.getAll);
-router.post('/', InventoryMovementController.create);
+router.post('/', authenticateToken, InventoryMovementController.create);
 
 /**
  * @swagger
@@ -235,8 +236,8 @@ router.post('/', InventoryMovementController.create);
  *         description: Movimiento no encontrado
  */
 router.get('/:id', InventoryMovementController.getById);
-router.put('/:id', InventoryMovementController.update);
-router.delete('/:id', InventoryMovementController.delete);
+router.put('/:id', authenticateToken, InventoryMovementController.update);
+router.delete('/:id', authenticateToken, InventoryMovementController.delete);
 
 /**
  * @swagger

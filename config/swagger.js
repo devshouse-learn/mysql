@@ -9,11 +9,13 @@ const options = {
       description: `
         API REST completa para gestión de inventario con las siguientes características:
         - Gestión de productos y categorías
-        - Control de movimientos de inventario (entradas/salidas)
+        - Sistema de bodegas/almacenes múltiples
+        - Control de movimientos de inventario por bodega (entradas/salidas)
         - Reportes y estadísticas en tiempo real
         - Autenticación JWT
-        - Sistema de usuarios con roles
+        - Sistema de usuarios con roles (admin/user)
         - Soft delete en todas las entidades
+        - Prisma ORM con MySQL
       `,
       contact: {
         name: 'API Support',
@@ -48,8 +50,12 @@ const options = {
         description: 'Gestión completa de productos con filtros avanzados'
       },
       {
+        name: 'Bodegas',
+        description: 'Gestión de bodegas/almacenes para control de inventario por ubicación'
+      },
+      {
         name: 'Movimientos de Inventario',
-        description: 'Control de entradas y salidas de inventario'
+        description: 'Control de entradas y salidas de inventario por bodega'
       },
       {
         name: 'Reportes',
@@ -155,6 +161,43 @@ const options = {
             }
           }
         },
+        Warehouse: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'integer',
+              example: 1
+            },
+            name: {
+              type: 'string',
+              example: 'Bodega Central'
+            },
+            location: {
+              type: 'string',
+              example: 'Av. Principal 123, Ciudad'
+            },
+            description: {
+              type: 'string',
+              example: 'Bodega principal de almacenamiento'
+            },
+            capacity: {
+              type: 'integer',
+              example: 10000
+            },
+            isActive: {
+              type: 'boolean',
+              example: true
+            },
+            createdAt: {
+              type: 'string',
+              format: 'date-time'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
         InventoryMovement: {
           type: 'object',
           properties: {
@@ -163,6 +206,10 @@ const options = {
               example: 1
             },
             productId: {
+              type: 'integer',
+              example: 1
+            },
+            warehouseId: {
               type: 'integer',
               example: 1
             },

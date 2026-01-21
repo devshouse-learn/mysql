@@ -11,6 +11,7 @@ const productRoutes = require('./routes/productRoutes');
 const inventoryMovementRoutes = require('./routes/inventoryMovementRoutes');
 const authRoutes = require('./routes/authRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const warehouseRoutes = require('./routes/warehouseRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +32,7 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       categories: '/api/categories',
       products: '/api/products',
+      warehouses: '/api/warehouses',
       inventoryMovements: '/api/inventory-movements',
       reports: '/api/reports'
     }
@@ -40,6 +42,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/warehouses', warehouseRoutes);
 app.use('/api/inventory-movements', inventoryMovementRoutes);
 app.use('/api/reports', reportRoutes);
 

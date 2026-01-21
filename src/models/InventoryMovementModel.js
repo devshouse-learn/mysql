@@ -8,7 +8,7 @@ class InventoryMovementModel {
   static async getAll(filters = {}) {
     try {
       const page = parseInt(filters.page) || 1;
-      const limit = parseInt(filters.limit) || 10;
+      const limit = parseInt(filters.limit) || 100; // Aumentado de 10 a 100
       const skip = (page - 1) * limit;
 
       const where = { deletedAt: null };
@@ -50,7 +50,7 @@ class InventoryMovementModel {
       const [movements, total] = await Promise.all([
         prisma.inventoryMovement.findMany({
           where,
-          include: { product: true, createdBy: true },
+          include: { product: true, warehouse: true, createdBy: true },
           skip,
           take: limit,
           orderBy: { createdAt: 'desc' }
@@ -82,6 +82,7 @@ class InventoryMovementModel {
         const movement = await tx.inventoryMovement.create({
           data: {
             productId: parseInt(data.product_id),
+            warehouseId: data.warehouse_id ? parseInt(data.warehouse_id) : null,
             movementType: data.movement_type,
             quantity: parseInt(data.quantity),
             referenceType: data.reference_type || null,
@@ -89,7 +90,7 @@ class InventoryMovementModel {
             notes: data.notes || null,
             createdById: data.created_by ? parseInt(data.created_by) : null
           },
-          include: { product: true }
+          include: { product: true, warehouse: true }
         });
 
         // Actualizar cantidad de producto

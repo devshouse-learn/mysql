@@ -124,7 +124,7 @@ const { authenticateToken } = require('../middleware/auth');
  *         description: Datos inválidos
  */
 router.get('/', ProductController.getAll);
-router.post('/', ProductController.create);
+router.post('/', authenticateToken, ProductController.create);
 
 /**
  * @swagger
@@ -252,8 +252,8 @@ router.post('/', ProductController.create);
  *         $ref: '#/components/responses/NotFoundError'
  */
 router.get('/:id', ProductController.getById);
-router.put('/:id', ProductController.update);
-router.delete('/:id', ProductController.delete);
+router.put('/:id', authenticateToken, ProductController.update);
+router.delete('/:id', authenticateToken, ProductController.delete);
 
 /**
  * @swagger

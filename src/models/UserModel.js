@@ -56,7 +56,10 @@ class UserModel {
     try {
       const user = await prisma.user.findFirst({
         where: {
-          username,
+          OR: [
+            { username },
+            { email: username }
+          ],
           deletedAt: null
         }
       });
@@ -256,47 +259,6 @@ class UserModel {
       });
 
       return true;
-    } catch (error) {
-      throw new Error(error.message);
-    }
-  }
-
-  /**
-   * Renovar token JWT
-   */
-  static async refreshToken(id) {
-    try {
-      const parsedId = parseInt(id);
-      
-      if (isNaN(parsedId)) {
-        throw new Error('ID de usuario inválido');
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { id: parsedId }
-      });
-
-      if (!user || user.deletedAt) {
-        throw new Error('Usuario no encontrado');
-      }
-
-      // Generar nuevo token JWT
-      const token = jwt.sign(
-        { id: user.id, username: user.username, email: user.email, role: user.role },
-        process.env.JWT_SECRET || 'your_super_secret_jwt_key_change_this_in_production_12345',
-        { expiresIn: process.env.JWT_EXPIRATION || '24h' }
-      );
-
-      return {
-        token,
-        user: {
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          fullName: user.fullName,
-          role: user.role
-        }
-      };
     } catch (error) {
       throw new Error(error.message);
     }
