@@ -29,8 +29,8 @@ function Products() {
     setLoading(true);
     try {
       const [productsRes, categoriesRes] = await Promise.all([
-        productService.getAll(),
-        categoryService.getAll()
+        productService.getAll({ limit: 1000, status: 'all' }),
+        categoryService.getAll({ limit: 1000 })
       ]);
       setProducts(productsRes.data);
       setCategories(categoriesRes.data);
@@ -94,6 +94,49 @@ function Products() {
     }
   };
 
+  const handleToggleActive = async (product) => {
+    try {
+      // Limpiar valores numéricos si vienen como strings con formato
+      const cleanPrice = typeof product.price === 'string' 
+        ? parseFloat(product.price.replace(/[^0-9.-]/g, '')) 
+        : parseFloat(product.price);
+      
+      const cleanCost = typeof product.cost === 'string' 
+        ? parseFloat(product.cost.replace(/[^0-9.-]/g, '')) 
+        : parseFloat(product.cost);
+
+      const newStatus = product.status === 'active' ? 'inactive' : 'active';
+
+      await productService.update(product.id, {
+        name: product.name,
+        sku: product.sku,
+        description: product.description,
+        price: cleanPrice,
+        cost: cleanCost,
+        categoryId: product.categoryId,
+        warehouseId: product.warehouseId,
+        quantityInStock: product.quantityInStock,
+        reorderLevel: product.reorderLevel,
+        supplier: product.supplier || '',
+        status: newStatus
+      });
+      
+      // Actualizar el estado local inmediatamente para feedback visual instantáneo
+      setProducts(prevProducts => 
+        prevProducts.map(p => 
+          p.id === product.id ? { ...p, status: newStatus } : p
+        )
+      );
+      
+      // Luego recargar desde el servidor para confirmar
+      setTimeout(() => loadData(), 300);
+    } catch (err) {
+      console.error('Error al cambiar estado:', err);
+      setError(err.response?.data?.error || 'Error al cambiar estado del producto');
+      loadData(); // Recargar en caso de error
+    }
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingProduct(null);
@@ -131,9 +174,9 @@ function Products() {
                 <th>SKU</th>
                 <th>Nombre</th>
                 <th>Categoría</th>
-                <th>Precio</th>
-                <th>Costo</th>
-                <th>Stock</th>
+                <th>Precio Unitario</th>
+                <th>Costo Unitario</th>
+                <th>Stock Disponible</th>
                 <th>Estado</th>
                 <th>Acciones</th>
               </tr>
@@ -152,7 +195,12 @@ function Products() {
                     </span>
                   </td>
                   <td>
-                    <span className={`badge ${product.status === 'active' ? 'active' : 'inactive'}`}>
+                    <span 
+                      className={`badge ${product.status === 'active' ? 'active' : 'inactive'}`}
+                      onClick={() => handleToggleActive(product)}
+                      style={{ cursor: 'pointer' }}
+                      title="Clic para cambiar estado"
+                    >
                       {product.status === 'active' ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>

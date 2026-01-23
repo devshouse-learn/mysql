@@ -76,6 +76,21 @@ function Warehouses() {
     }
   };
 
+  const handleToggleActive = async (warehouse) => {
+    try {
+      await warehouseService.update(warehouse.id, {
+        name: warehouse.name,
+        location: warehouse.location,
+        description: warehouse.description,
+        capacity: warehouse.capacity,
+        isActive: !warehouse.isActive
+      });
+      loadWarehouses();
+    } catch (err) {
+      setError('Error al cambiar estado de la bodega');
+    }
+  };
+
   const handleCloseModal = () => {
     setShowModal(false);
     setEditingWarehouse(null);
@@ -92,9 +107,8 @@ function Warehouses() {
     setSelectedWarehouse(warehouse);
     setShowProductsModal(true);
     try {
-      const response = await productService.getAll();
-      const productsInWarehouse = response.data.filter(p => p.warehouseId === warehouse.id);
-      setWarehouseProducts(productsInWarehouse);
+      const response = await productService.getAll({ warehouseId: warehouse.id, limit: 1000, status: 'all' });
+      setWarehouseProducts(response.data);
     } catch (err) {
       setError('Error al cargar productos de la bodega');
       setWarehouseProducts([]);
@@ -139,7 +153,12 @@ function Warehouses() {
                   <td>{warehouse.location || '-'}</td>
                   <td>{warehouse.capacity || '-'}</td>
                   <td>
-                    <span className={`badge ${warehouse.isActive ? 'active' : 'inactive'}`}>
+                    <span 
+                      className={`badge ${warehouse.isActive ? 'active' : 'inactive'}`}
+                      onClick={() => handleToggleActive(warehouse)}
+                      style={{ cursor: 'pointer' }}
+                      title="Clic para cambiar estado"
+                    >
                       {warehouse.isActive ? 'Activa' : 'Inactiva'}
                     </span>
                   </td>
@@ -246,7 +265,8 @@ function Warehouses() {
                         <th>SKU</th>
                         <th>Nombre</th>
                         <th>Stock</th>
-                        <th>Precio</th>
+                        <th>Precio Unitario</th>
+                        <th>Costo Unitario</th>
                         <th>Estado</th>
                       </tr>
                     </thead>
@@ -264,6 +284,7 @@ function Warehouses() {
                             </span>
                           </td>
                           <td>${parseFloat(product.price).toLocaleString()} COP</td>
+                          <td>${parseFloat(product.cost || 0).toLocaleString()} COP</td>
                           <td>
                             <span className={`badge ${product.status === 'active' ? 'active' : 'inactive'}`}>
                               {product.status === 'active' ? 'Activo' : 'Inactivo'}
